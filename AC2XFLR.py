@@ -1,5 +1,7 @@
 from scipy.integrate import quad
 import xml.etree.ElementTree as el
+from matplotlib import pyplot as plt
+import numpy as np
 
 def createSimpleKVP(key, txt, parent):
 	elem = el.Element(key)
@@ -97,11 +99,35 @@ class Wing:
 		self.double_fin = double_fin
 
 		self.updateAll()
+		if(draw):
+			self.draw()
 
-	def chordFore(self, y):
+	def chordForeElliptical(self, y):
 		K_fore = self.root_chord * self.fsmf
 		c_fore = K_fore*(1-(2/self.span * y)**2)**0.5
 		return c_fore
+
+	def chordAftElliptical(self, y):
+		K_aft = self.root_chord * (1-self.fsmf)
+		c_aft = K_aft*(1-(2/self.span * y)**2)**0.5
+		return c_aft
+
+	def draw(self):
+		ys = []
+		c_fores = []
+		c_afts = []
+		#in independent ifs because number of points needed differs per planform shape
+		#rect needs few, elliptical needs many
+		if(self.shape == "ellipse"):
+			ys = np.linspace(-self.span/2, self.span, 200)
+			c_fores = self.chordForeElliptical(ys)
+			c_afts = self.chordAftElliptical(ys)
+		plt.figure()
+		plt.plot(ys, c_fores, label = 'LE')
+		plt.plot(ys, c_afts, label = 'TE')
+		plt.xlabel('x, span position (m)')
+		plt.ylabel('y, longitudinal position (m)')
+		plt.title(self._type + " " +str(self._id))
 
 
 	def updateArea(self):
@@ -189,7 +215,7 @@ class Wing:
 		while(y < self.span/2):
 			if(self.shape == "ellipse"):
 				c = chordElliptical(y, self.root_chord, self.span)
-				x_off = chordFore(y, self.root_chord, self.span, self.fsmf)
+				x_off = chordForeElliptical(y, self.root_chord, self.span, self.fsmf)
 				if(c == 0.00):
 					c = 0.001
 				createSection(sections, y, c, self.foil, -x_off)
