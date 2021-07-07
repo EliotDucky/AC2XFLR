@@ -91,6 +91,7 @@ class Wing:
 		self.shape = shape_args["shape"]
 		if(self.shape == "ellipse"):
 			self.fsmf = shape_args["fsmf"]
+			global chordElliptical
 			self.chord_func = chordElliptical
 		self._type = _type
 		self.symmetric_fin = symmetric_fin
