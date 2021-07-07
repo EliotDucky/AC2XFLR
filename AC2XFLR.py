@@ -51,6 +51,10 @@ class Wing:
 
 	area = 0.0 #m^2
 	aspect_ratio = 0.0
+
+	def chordElliptical(y, root_chord, span):
+		c = root_chord * (1-(2/span * y)**2)**(1/2)
+		return c
 	
 
 	def __init__(self, foil = "NACA 1212",
@@ -94,10 +98,6 @@ class Wing:
 		self.double_fin = double_fin
 
 		self.updateAll()
-
-	def chordElliptical(y, root_chord, span):
-		c = root_chord * (1-(2/span * y)**2)**(1/2)
-		return c
 
 	def chordFore(self, y):
 		K_fore = self.root_chord * self.fsmf
