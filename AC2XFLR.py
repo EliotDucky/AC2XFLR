@@ -57,7 +57,7 @@ class Wing:
 		angle_of_attack = 0.0, span = 8.0,
 		root_chord = 1.0, mass = 50.0,
 		shape_args = {"shape": "ellipse",
-			"fsmf": 0.25}, _type = "mainwing"
+			"fsmf": 0.25}, _type = "mainwing",
 		symmetric_fin = False,
 		double_fin = False,
 		draw = False):
