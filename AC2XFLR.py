@@ -119,10 +119,10 @@ class Wing:
 		#in independent ifs because number of points needed differs per planform shape
 		#rect needs few, elliptical needs many
 		if(self.shape == "ellipse"):
-			ys = np.linspace(-self.span/2, self.span, 200)
+			ys = np.linspace(-self.span/2, self.span, 200, True)
 			c_fores = self.chordForeElliptical(ys)
 			c_afts = self.chordAftElliptical(ys)
-		plt.figure()
+		plt.figure(figsize=(16, 9), dpi = 80)
 		plt.plot(ys, c_fores, label = 'LE')
 		plt.plot(ys, c_afts, label = 'TE')
 		if(self.span >= self.root_chord):
@@ -130,9 +130,10 @@ class Wing:
 		else:
 			lim = self.root_chord
 		plt.axis([-lim, lim, -lim, lim])
-		plt.xlabel('x, span position (m)')
-		plt.ylabel('y, longitudinal position (m)')
+		plt.xlabel('y, span position (m)')
+		plt.ylabel('x, longitudinal position (m)')
 		plt.title(self._type + " " +str(self._id))
+		plt.legend()
 
 
 	def updateArea(self):
