@@ -24,6 +24,10 @@ def createSection(parent, y, c, foil, x_sweep=0.000, dihedral=0.000, twist = 0.0
     parent.append(section)
     return section
 
+def chordElliptical(y, root_chord, span):
+		c = root_chord * (1-(2/span * y)**2)**(1/2)
+		return c
+
 global_wing_id = -1
 def incrimentWingID():
 	global global_wing_id
@@ -50,12 +54,7 @@ class Wing:
 	chord_func = None #function for calculating chord length at a spanwise position
 
 	area = 0.0 #m^2
-	aspect_ratio = 0.0
-
-	def chordElliptical(y, root_chord, span):
-		c = root_chord * (1-(2/span * y)**2)**(1/2)
-		return c
-	
+	aspect_ratio = 0.0	
 
 	def __init__(self, foil = "NACA 1212",
 		angle_of_attack = 0.0, span = 8.0,
