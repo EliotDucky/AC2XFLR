@@ -126,7 +126,7 @@ class Wing:
 		plt.plot(ys, c_fores, label = 'LE')
 		plt.plot(ys, c_afts, label = 'TE')
 		if(self.span >= self.root_chord):
-			lim = self.span
+			lim = self.span/2
 		else:
 			lim = self.root_chord
 		plt.axis([-lim, lim, -lim, lim])
