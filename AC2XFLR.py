@@ -110,7 +110,7 @@ class Wing:
 	def chordAftElliptical(self, y):
 		K_aft = self.root_chord * (1-self.fsmf)
 		c_aft = K_aft*(1-(2/self.span * y)**2)**0.5
-		return c_aft
+		return -c_aft
 
 	def draw(self):
 		ys = []
