@@ -220,7 +220,7 @@ class Wing:
 		while(y < self.span/2):
 			if(self.shape == "ellipse"):
 				c = chordElliptical(y, self.root_chord, self.span)
-				x_off = chordForeElliptical(y)
+				x_off = self.chordForeElliptical(y)
 				if(c == 0.00):
 					c = 0.001
 				createSection(sections, y, c, self.foil, -x_off)
