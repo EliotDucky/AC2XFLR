@@ -25,8 +25,8 @@ def createSection(parent, y, c, foil, x_sweep=0.000, dihedral=0.000, twist = 0.0
     return section
 
 def chordElliptical(y, root_chord, span):
-		c = root_chord * (1-(2/span * y)**2)**(1/2)
-		return c
+	c = root_chord * (1-(2/span * y)**2)**(1/2)
+	return c
 
 global_wing_id = -1
 def incrimentWingID():
