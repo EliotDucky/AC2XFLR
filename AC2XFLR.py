@@ -2,27 +2,27 @@ from scipy.integrate import quad
 import xml.etree.ElementTree as el
 
 def createSimpleKVP(key, txt, parent):
-    elem = el.Element(key)
-    elem.text = txt
-    parent.append(elem)
-    return elem
-    
+	elem = el.Element(key)
+	elem.text = txt
+	parent.append(elem)
+	return elem
+	
 def createSection(parent, y, c, foil, x_sweep=0.000, dihedral=0.000, twist = 0.000, x_panels = 6, x_distribution="COSINE", y_panels = 9, y_distribution = "INVERSE SINE"):
-    
-    section = el.Element('Section')
-    createSimpleKVP('y_position', str(round(y, 3)), section)
-    createSimpleKVP('Chord', str(round(c, 3)), section)
-    createSimpleKVP('xOffset', str(round(x_sweep, 3)), section)
-    createSimpleKVP('Dihedral', str(round(dihedral, 3)), section)
-    createSimpleKVP('Twist', str(round(twist, 3)), section)
-    createSimpleKVP('x_number_of_panels', str(x_panels), section)
-    createSimpleKVP('x_panel_distribution', x_distribution, section)
-    createSimpleKVP('y_number_of_panels', str(y_panels), section)
-    createSimpleKVP('y_panel_distribution', y_distribution, section)
-    createSimpleKVP('Left_Side_FoilName', foil, section)
-    createSimpleKVP('Right_Side_FoilName', foil, section)
-    parent.append(section)
-    return section
+	
+	section = el.Element('Section')
+	createSimpleKVP('y_position', str(round(y, 3)), section)
+	createSimpleKVP('Chord', str(round(c, 3)), section)
+	createSimpleKVP('xOffset', str(round(x_sweep, 3)), section)
+	createSimpleKVP('Dihedral', str(round(dihedral, 3)), section)
+	createSimpleKVP('Twist', str(round(twist, 3)), section)
+	createSimpleKVP('x_number_of_panels', str(x_panels), section)
+	createSimpleKVP('x_panel_distribution', x_distribution, section)
+	createSimpleKVP('y_number_of_panels', str(y_panels), section)
+	createSimpleKVP('y_panel_distribution', y_distribution, section)
+	createSimpleKVP('Left_Side_FoilName', foil, section)
+	createSimpleKVP('Right_Side_FoilName', foil, section)
+	parent.append(section)
+	return section
 
 def chordElliptical(y, root_chord, span):
 	c = root_chord * (1-(2/span * y)**2)**(1/2)
@@ -118,89 +118,89 @@ class Wing:
 	#To XML
 
 	def wingToXML(self, resolution=50):
-	    explane = el.Element('explane')
-	    explane.set('version', "1.0")
+		explane = el.Element('explane')
+		explane.set('version', "1.0")
 
-	    units = el.SubElement(explane, 'Units')
-	    ltm = el.SubElement(units, 'length_unit_to_meter')
-	    ltm.text = '1'
-	    mtk = el.SubElement(units, 'mass_unit_to_kg')
-	    mtk.text = '1'
-	    
-	    #default mainwing
-	    selfname = "wing"+str(self._id)
-	    selfred = '153'
-	    selfgreen = '254'
-	    selfblue = '227'
-	    selftype = 'MAINWING'
-	    selffin = 'FALSE'
-	    if(self._type == "horizontal stabiliser"):
-	        selfname = "horiz"+str(self._id)
-	        selfred = '20'
-	        selfgreen = '254'
-	        selfblue = '227'
-	        selftype = 'ELEVATOR'
-	    elif(self._type == "vertical stabiliser"):
-	        #this is a vert stabiliser
-	        selfname = "vert"+str(self._id)
-	        selfred = '254'
-	        selfgreen = '220'
-	        selfblue = '20'
-	        selftype = 'FIN'
-	        selffin = 'TRUE'
-	        
-	    
-	    wing = el.SubElement(explane, 'wing')
-	    name = el.SubElement(wing, 'Name')
-	    name.text = selfname
-	    _type = el.SubElement(wing, 'Type')
-	    _type.text = selftype
-	    color = el.SubElement(wing, 'Color')
-	    red = el.SubElement(color, 'red')
-	    red.text = selfred
-	    green = el.SubElement(color, 'green')
-	    green.text = selfgreen
-	    blue = el.SubElement(color, 'blue')
-	    blue.text = selfblue
-	    alpha = el.SubElement(color, 'alpha')
-	    alpha.text = '255'
+		units = el.SubElement(explane, 'Units')
+		ltm = el.SubElement(units, 'length_unit_to_meter')
+		ltm.text = '1'
+		mtk = el.SubElement(units, 'mass_unit_to_kg')
+		mtk.text = '1'
+		
+		#default mainwing
+		selfname = "wing"+str(self._id)
+		selfred = '153'
+		selfgreen = '254'
+		selfblue = '227'
+		selftype = 'MAINWING'
+		selffin = 'FALSE'
+		if(self._type == "horizontal stabiliser"):
+			selfname = "horiz"+str(self._id)
+			selfred = '20'
+			selfgreen = '254'
+			selfblue = '227'
+			selftype = 'ELEVATOR'
+		elif(self._type == "vertical stabiliser"):
+			#this is a vert stabiliser
+			selfname = "vert"+str(self._id)
+			selfred = '254'
+			selfgreen = '220'
+			selfblue = '20'
+			selftype = 'FIN'
+			selffin = 'TRUE'
+			
+		
+		wing = el.SubElement(explane, 'wing')
+		name = el.SubElement(wing, 'Name')
+		name.text = selfname
+		_type = el.SubElement(wing, 'Type')
+		_type.text = selftype
+		color = el.SubElement(wing, 'Color')
+		red = el.SubElement(color, 'red')
+		red.text = selfred
+		green = el.SubElement(color, 'green')
+		green.text = selfgreen
+		blue = el.SubElement(color, 'blue')
+		blue.text = selfblue
+		alpha = el.SubElement(color, 'alpha')
+		alpha.text = '255'
 
-	    pos = el.SubElement(wing, 'Position')
-	    pos.text = '          0,           0,           0'
-	    tilt = el.SubElement(wing, 'Tilt_angle')
-	    tilt.text = '0.000'
-	    symm = el.SubElement(wing, 'Symetric')
-	    symm.text = 'true'
-	    fin = el.SubElement(wing, 'isFin')
-	    fin.text = selffin
-	    dbfin = el.SubElement(wing, 'isDoubleFin')
-	    dbfin.text = str(self.findouble)
-	    symfin = el.SubElement(wing, 'isSymFin')
-	    symfin.text = str(self.finsym)
+		pos = el.SubElement(wing, 'Position')
+		pos.text = '		  0,		   0,		   0'
+		tilt = el.SubElement(wing, 'Tilt_angle')
+		tilt.text = '0.000'
+		symm = el.SubElement(wing, 'Symetric')
+		symm.text = 'true'
+		fin = el.SubElement(wing, 'isFin')
+		fin.text = selffin
+		dbfin = el.SubElement(wing, 'isDoubleFin')
+		dbfin.text = str(self.findouble)
+		symfin = el.SubElement(wing, 'isSymFin')
+		symfin.text = str(self.finsym)
 
-	    inertia = el.SubElement(wing, 'Inertia')
-	    volmass = el.SubElement(inertia, 'Volume_Mass')
-	    volmass.text = str(self.mass)
-	    
-	    sections = el.SubElement(wing, 'Sections')
-	    createSection(sections, 0.000, self.root_chord, self.foil, -self.fsmf*self.root_chord) #root
-	    dx = self.span/(2*resolution)
-	    y = dx
-	    while(y < self.span/2):
-	        if(self.shape == "ellipse"):
-	            c = chordElliptical(y, self.root_chord, self.span)
-	            x_off = chordFore(y, self.root_chord, self.span, self.fsmf)
-	            if(c == 0.00):
-	                c = 0.001
-	            createSection(sections, y, c, self.foil, -x_off)
-	        y+=dx
-	    #createSection(sections, self.span/2, 0.000, "NACA1212", 0.000, 0.000, 0.000, 13, "COSINE", 5,"UNIFORM") #tip
-	    
-	    with open(selfname+'.xml', 'wb') as file:
-	        file.write('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE explane>'.encode('utf-8'))
-	        el.ElementTree(explane).write(file, encoding='utf-8')
-	    
-	    print("Successfully created file "+ selfname +".xml")
+		inertia = el.SubElement(wing, 'Inertia')
+		volmass = el.SubElement(inertia, 'Volume_Mass')
+		volmass.text = str(self.mass)
+		
+		sections = el.SubElement(wing, 'Sections')
+		createSection(sections, 0.000, self.root_chord, self.foil, -self.fsmf*self.root_chord) #root
+		dx = self.span/(2*resolution)
+		y = dx
+		while(y < self.span/2):
+			if(self.shape == "ellipse"):
+				c = chordElliptical(y, self.root_chord, self.span)
+				x_off = chordFore(y, self.root_chord, self.span, self.fsmf)
+				if(c == 0.00):
+					c = 0.001
+				createSection(sections, y, c, self.foil, -x_off)
+			y+=dx
+		#createSection(sections, self.span/2, 0.000, "NACA1212", 0.000, 0.000, 0.000, 13, "COSINE", 5,"UNIFORM") #tip
+		
+		with open(selfname+'.xml', 'wb') as file:
+			file.write('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE explane>'.encode('utf-8'))
+			el.ElementTree(explane).write(file, encoding='utf-8')
+		
+		print("Successfully created file "+ selfname +".xml")
 
 	#Getters and Setters
 	def getID(self):
