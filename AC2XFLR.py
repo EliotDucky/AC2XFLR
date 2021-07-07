@@ -87,7 +87,7 @@ class Wing:
 		self.mass = mass
 		self.shape = shape_args["shape"]
 		if(self.shape == "ellipse"):
-			self.fsmf = shape_args["fsmf"]
+			self.fsmf = 0.25 #shape_args["fsmf"]
 			self.chord_func = chordElliptical
 		self._type = _type
 		self.symmetric_fin = symmetric_fin
