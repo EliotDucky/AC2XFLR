@@ -54,7 +54,11 @@ class Wing:
 	chord_func = None #function for calculating chord length at a spanwise position
 
 	area = 0.0 #m^2
-	aspect_ratio = 0.0	
+	aspect_ratio = 0.0
+
+	def chordElliptical(self, y, root_chord, span):
+		c = root_chord * (1-(2/span * y)**2)**(1/2)
+		return c	
 
 	def __init__(self, foil = "NACA 1212",
 		angle_of_attack = 0.0, span = 8.0,
