@@ -125,6 +125,11 @@ class Wing:
 		plt.figure()
 		plt.plot(ys, c_fores, label = 'LE')
 		plt.plot(ys, c_afts, label = 'TE')
+		if(self.span >= self.root_chord):
+			lim = self.span
+		else:
+			lim = self.root_chord
+		plt.axis([-lim, lim, -lim, lim])
 		plt.xlabel('x, span position (m)')
 		plt.ylabel('y, longitudinal position (m)')
 		plt.title(self._type + " " +str(self._id))
