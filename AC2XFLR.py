@@ -39,13 +39,13 @@ class Wing:
 	root_chord = 0.0 #m
 	mass = 0.0 #kg
 
+	shape = "ellipse"
+	fsmf = 0.0 #forward semi-minor fraction for ellipses
+
 	symmetric_fin = False #true if this wing is a fin and symmetrical
 	#(reflected along the z axis)
 	double_fin = False #true if this wing is a fin and to be doubled
 	#(reflected along the y axis)
-
-	shape = "ellipse"
-	fsmf = 0.0 #forward semi-minor fraction for ellipses
 
 	chord_func = None #function for calculating chord length at a spanwise position
 
@@ -87,7 +87,7 @@ class Wing:
 		self.mass = mass
 		self.shape = shape_args["shape"]
 		if(self.shape == "ellipse"):
-			self.fsmf = 0.25 #shape_args["fsmf"]
+			self.fsmf = shape_args["fsmf"]
 			self.chord_func = chordElliptical
 		self._type = _type
 		self.symmetric_fin = symmetric_fin
