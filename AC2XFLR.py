@@ -205,9 +205,9 @@ class Wing:
 		fin = el.SubElement(wing, 'isFin')
 		fin.text = selffin
 		dbfin = el.SubElement(wing, 'isDoubleFin')
-		dbfin.text = str(self.findouble)
+		dbfin.text = str(self.double_fin)
 		symfin = el.SubElement(wing, 'isSymFin')
-		symfin.text = str(self.finsym)
+		symfin.text = str(self.symmetric_fin)
 
 		inertia = el.SubElement(wing, 'Inertia')
 		volmass = el.SubElement(inertia, 'Volume_Mass')
