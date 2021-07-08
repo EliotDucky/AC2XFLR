@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os.path as os_p
 from os import makedirs
+import math
 
 def createSimpleKVP(key, txt, parent):
 	elem = el.Element(key)
@@ -305,3 +306,176 @@ class Wing:
 	def setIsDoubleFin(self, is_double_fin):
 		self.double_fin = is_double_fin
 
+#LIBRARY CREDIT: Michel Robjins
+import naca.naca as naca
+
+def coordsToStr(coords):
+	x = coords[0]
+	x = round(x, 5)
+	y = coords[1]
+	y = round(y, 5)
+	z = coords[2]
+	z = round(z, 5)
+	_str = str(x) + ", " + str(y) + ", " +str(z)
+	return _str
+	
+def createFuselageFrame(x, y, parent, n=12):
+	frame = el.Element('frame')
+	
+	n /= 2
+	n = int(n)
+		
+	pos = [x, 0, 0]
+	pos = coordsToStr(pos)
+	createSimpleKVP('Position', pos, frame)
+	
+	points = []
+	theta = math.pi / n
+	for i in range(n+1):
+		theta = math.pi / n
+		theta *= i
+		_sin = y * math.sin(theta)
+		_cos = y * math.cos(theta)
+		point = [x, _sin, _cos]
+		point = coordsToStr(point)
+		createSimpleKVP('point', point, frame)
+
+	parent.append(frame)
+	
+	return frame
+
+class Fuselage:
+	foil = "NACA "
+	fuse2d = [] #coords for entire 2d surface
+	suction = [] #coords for top surface
+	pressure = []
+	chord = 0
+	
+	def __init__(self, naca_4, chord, N=24):
+		self.fuse2d = naca.NACA4(naca_4, N)
+		LE_index = int(len(self.fuse2d)/2) + 1
+		self.pressure = self.fuse2d[LE_index:len(self.fuse2d)]
+		self.suction = self.fuse2d[0:LE_index]
+		self.foil += naca_4
+		self.chord = chord
+		
+	def checkPayloadGeo(self, radius_h, radius_v, t_loc, top_taller = True, plot = False):
+		"""
+		<radius_h> = horizontal length occupied by payload forwards of thickest payload point
+		<radius_v> = vertical height occupied by payload upwards of fuselage datum line
+		<t_loc> = location of thickest payload geo as fraction of chord from LE
+		[top_taller] = does payload stick out more at top or bottom
+		
+		returns: True if fuselage doesn't collide with payload
+		"""
+		surf = self.suction
+		if(not top_taller):
+			surf = self.pressure
+			
+		fore_x = t_loc - radius_h / self.chord
+		y = radius_v / self.chord
+		aft_x = t_loc + radius_h / self.chord
+		
+		if(plot):
+			plt.figure(figsize=(16, 9), dpi = 80)
+			xs = []
+			ys = []
+			for i in range(len(surf)):
+				xs.append(surf[i][0])
+				ys.append(surf[i][1])
+				
+			#box
+			plx = []
+			ply = []
+			
+			plx.append(fore_x)
+			ply.append(0)
+			
+			plx.append(fore_x)
+			ply.append(y)
+			
+			plx.append(aft_x)
+			ply.append(y)
+			
+			plx.append(aft_x)
+			ply.append(0)
+			
+			plt.plot(xs, ys)
+			plt.plot(plx, ply, 'r')
+			plt.ylim(0, 0.5)
+		
+		legal = True
+		
+		for coords in surf:
+			if(coords[0] < t_loc):
+				if(coords[0] > fore_x and coords[1] < y):
+					legal = False
+					break
+			elif(coords[0] > t_loc):
+				if(coords[0] < aft_x and coords[1] < y):
+					legal = False
+					break
+		
+		return legal
+
+	def fuselageToXML(self):
+		"""
+		Frames must be written before degrees otherwise will crash on import to XFLR
+		"""
+		explane = el.Element('explane')
+		explane.set('version', "1.0")
+		
+		units = el.SubElement(explane, 'Units')
+		ltm = el.SubElement(units, 'length_unit_to_meter')
+		ltm.text = '1'
+		mtk = el.SubElement(units, 'mass_unit_to_kg')
+		mtk.text = '1'
+		
+		body = el.SubElement(explane, 'body')
+		name = el.SubElement(body, 'Name')
+		name.text = "Fuselage " + self.foil
+		color = el.SubElement(body, 'Color')
+		red = el.SubElement(color, 'red')
+		red.text = '98'
+		green = el.SubElement(color, 'green')
+		green.text = '102'
+		blue = el.SubElement(color, 'blue')
+		blue.text = '156'
+		alpha = el.SubElement(color, 'alpha')
+		alpha.text = '255'
+		
+		desc = el.SubElement(body, 'Description')
+		desc.text = 'fuselage'
+		pos = el.SubElement(body, 'Position')
+		pos.text = '0, 0 ,0'
+		_type = el.SubElement(body, 'Type')
+		_type.text = 'FLATPANELS'
+		inertia = el.SubElement(body, 'Inertia')
+		vmass = el.SubElement(inertia, 'Volume_Mass')
+		vmass.text = '0.000'
+			
+		for i in range(len(self.suction)):
+			x = self.suction[-i][0] * self.chord
+			y = self.suction[-i][1] * self.chord
+			createFuselageFrame(x, y, body, 18)
+			
+		xdeg = el.SubElement(body, 'x_degree')
+		xdeg.text  = '3'
+		hoop_deg = el.SubElement(body, 'hoop_degree')
+		hoop_deg.text = '4'
+		xpanels = el.SubElement(body, 'x_panels')
+		xpanels.text = '19'
+		hoop_panels = el.SubElement(body, 'hoop_panels')
+		hoop_panels.text = '11'
+
+		selfname = str(name.text) + ".xml"
+		save_path = 'geometry'
+		if(not os_p.exists(save_path)):
+			makedirs(save_path)
+		filename = os_p.join(save_path, selfname)
+			
+		with open(filename, 'wb') as file:
+			file.write('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE explane>'.encode('utf-8'))
+			el.ElementTree(explane).write(file, encoding='utf-8')
+			
+		print("Successfully created file "+ selfname)
