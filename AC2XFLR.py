@@ -2,6 +2,8 @@ from scipy.integrate import quad
 import xml.etree.ElementTree as el
 from matplotlib import pyplot as plt
 import numpy as np
+import os.path as os_p
+from os import makedirs
 
 def createSimpleKVP(key, txt, parent):
 	elem = el.Element(key)
@@ -227,8 +229,11 @@ class Wing:
 				createSection(sections, y, c, self.foil, -x_off)
 			y+=dx
 		#createSection(sections, self.span/2, 0.000, "NACA1212", 0.000, 0.000, 0.000, 13, "COSINE", 5,"UNIFORM") #tip
-		
-		with open(selfname+'.xml', 'wb') as file:
+		save_path = 'geometry'
+		if(not os_p.exists(save_path)):
+			makedirs(save_path)
+		filename = os_p.join(save_path, selfname+'.xml')
+		with open(filename, 'wb') as file:
 			file.write('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE explane>'.encode('utf-8'))
 			el.ElementTree(explane).write(file, encoding='utf-8')
 		
