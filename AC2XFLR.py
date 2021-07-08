@@ -306,7 +306,7 @@ class Wing:
 	def setIsDoubleFin(self, is_double_fin):
 		self.double_fin = is_double_fin
 
-#LIBRARY CREDIT: Michel Robjins
+#LIBRARY CREDIT: Michel Robijns
 import naca.naca as naca
 
 def coordsToStr(coords):
