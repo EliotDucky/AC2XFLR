@@ -33,6 +33,9 @@ def chordElliptical(y, root_chord, span):
 	c = root_chord * (1-(2/span * y)**2)**(1/2)
 	return c
 
+def chordRect(y, chord):
+	return chord
+
 global_wing_id = -1
 def incrimentWingID():
 	global global_wing_id
@@ -57,6 +60,7 @@ class Wing:
 	#(reflected along the y axis)
 
 	chord_func = None #function for calculating chord length at a spanwise position
+	chord_params = () #parameters for the chord function other than y
 
 	area = 0.0 #m^2
 	aspect_ratio = 0.0
@@ -97,6 +101,10 @@ class Wing:
 		if(self.shape == "ellipse"):
 			self.fsmf = shape_args["fsmf"]
 			self.chord_func = chordElliptical
+			self.chord_params = (self.root_chord, self.span)
+		elif(self.shape == "rectangle"):
+			self.chord_func = chordRect
+			self.chord_params = (self.root_chord,)
 		self._type = _type
 		self.symmetric_fin = symmetric_fin
 		self.double_fin = double_fin
@@ -122,9 +130,13 @@ class Wing:
 		#in independent ifs because number of points needed differs per planform shape
 		#rect needs few, elliptical needs many
 		if(self.shape == "ellipse"):
-			ys = np.linspace(-self.span/2, self.span, 200, True)
+			ys = np.linspace(-self.span/2, self.span/2, 200, True)
 			c_fores = self.chordForeElliptical(ys)
 			c_afts = self.chordAftElliptical(ys)
+		elif(self.shape == "rectangle"):
+			ys = np.array([-self.span/2, self.span/2])
+			c_fores = np.array([0,0])
+			c_afts = np.array([-self.root_chord, -self.root_chord])
 		plt.figure(figsize=(16, 9), dpi = 80)
 		plt.plot(ys, c_fores, label = 'LE')
 		plt.plot(ys, c_afts, label = 'TE')
@@ -138,15 +150,24 @@ class Wing:
 		plt.title(self._type + " " +str(self._id))
 		plt.legend()
 
+	def updateShape(self):
+		if(self.shape == "ellipse"):
+			self.chord_params = (self.root_chord, self.span)
+		elif(self.shape == "rectangle"):
+			self.chord_params = (self.root_chord,)
 
 	def updateArea(self):
-		self.area = 2 * quad(self.chord_func, 0, self.span/2, (self.root_chord, self.span))[0]
+		if self.chord_params is not None:
+			self.area = 2 * quad(self.chord_func, 0, self.span/2, self.chord_params)[0]
+		else:
+			self.area = 2 * quad(self.chord_func, 0, self.span/2)[0]
 
 	def updateAspectRatio(self):
 		#make sure to updateArea before calling this
 		self.aspect_ratio = self.span**2 / self.area
 
 	def updateAll(self):
+		self.updateShape()
 		self.updateArea()
 		self.updateAspectRatio()
 
@@ -227,7 +248,10 @@ class Wing:
 				x_off = self.chordForeElliptical(y)
 				if(c == 0.00):
 					c = 0.001
-				createSection(sections, y, c, self.foil, -x_off)
+			elif(self.shape == "rectangle"):
+				c = self.root_chord
+				x_off = 0
+			createSection(sections, y, c, self.foil, -x_off)
 			y+=dx
 		#createSection(sections, self.span/2, 0.000, "NACA1212", 0.000, 0.000, 0.000, 13, "COSINE", 5,"UNIFORM") #tip
 		save_path = 'geometry'
