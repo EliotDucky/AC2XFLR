@@ -256,10 +256,12 @@ class Wing:
 		volmass.text = str(self.mass)
 		
 		sections = el.SubElement(wing, 'Sections')
-		createSection(sections, 0.000, self.root_chord, self.foil, -self.fsmf*self.root_chord) #root
+		#createSection(sections, 0.000, self.root_chord, self.foil, -self.fsmf*self.root_chord) #root
 		dx = self.span/(2*resolution)
-		y = dx
+		y = 0.0
 		while(y < self.span/2):
+			c = 1.0
+			x_off = 0.0
 			if(self.shape == "ellipse"):
 				c = chordElliptical(y, self.root_chord, self.span)
 				x_off = self.chordForeElliptical(y)
@@ -268,6 +270,9 @@ class Wing:
 			elif(self.shape == "rectangle"):
 				c = self.root_chord
 				x_off = 0
+			elif(self.shape == "taper"):
+				c = chordTaper(y, self.root_chord, self.span, self.taper_ratio)
+				x_off = c/2
 			createSection(sections, y, c, self.foil, -x_off)
 			y+=dx
 		#createSection(sections, self.span/2, 0.000, "NACA1212", 0.000, 0.000, 0.000, 13, "COSINE", 5,"UNIFORM") #tip
