@@ -36,6 +36,13 @@ def chordElliptical(y, root_chord, span):
 def chordRect(y, chord):
 	return chord
 
+def chordTaper(y, root_chord, span, taper_ratio):
+	grad = 2* root_chord/span * (taper_ratio - 1)
+	if(y<0):
+		grad *= -1
+	c = y*grad + root_chord
+	return c
+
 global_wing_id = -1
 def incrimentWingID():
 	global global_wing_id
@@ -84,6 +91,7 @@ class Wing:
 			<dictionary> shape_args {
 				<string> "shape" - the planform shape of the wing
 				<float> "fsmf" - only if "shape": "ellipse"
+				<float> "taper_ratio" - the chord length of the tip as a fraction of root_chord
 				#MORE SUCH AS TAPER RATIO COMING SOON
 			}
 			<string> type - can be "mainwing", horizontal stabiliser", "vertical stabiliser"
@@ -105,6 +113,10 @@ class Wing:
 		elif(self.shape == "rectangle"):
 			self.chord_func = chordRect
 			self.chord_params = (self.root_chord,)
+		elif(self.shape == "taper"):
+			self.chord_func = chordTaper
+			self.taper_ratio = shape_args["taper_ratio"]
+			self.chord_params = (self.root_chord, self.span, self.taper_ratio)
 		self._type = _type
 		self.symmetric_fin = symmetric_fin
 		self.double_fin = double_fin
@@ -137,6 +149,11 @@ class Wing:
 			ys = np.array([-self.span/2, self.span/2])
 			c_fores = np.array([0,0])
 			c_afts = np.array([-self.root_chord, -self.root_chord])
+		elif(self.shape == "taper"):
+			ys = np.array([-self.span/2, 0, self.span/2])
+			c_fores = np.array([chordTaper(-self.span/2, self.root_chord, self.span, self.taper_ratio)/2,
+				self.root_chord/2, chordTaper(self.span/2, self.root_chord, self.span, self.taper_ratio)/2])
+			c_afts = -c_fores
 		plt.figure(figsize=(16, 9), dpi = 80)
 		plt.plot(ys, c_fores, label = 'LE')
 		plt.plot(ys, c_afts, label = 'TE')
@@ -289,6 +306,9 @@ class Wing:
 	def getFSMF(self):
 		return self.fsmf
 
+	def getTaperRatio(self):
+		return self.taper_ratio
+
 	def getChordFunction(self):
 		return self.chord_func
 
@@ -323,6 +343,9 @@ class Wing:
 
 	def setFSMF(self, fsmf, draw=False):
 		self.fsmf = fsmf
+
+	def setTaperRatio(self, taper_ratio):
+		self.taper_ratio = taper_ratio
 
 	def setIsSymmetricFin(self, is_symmetric_fin):
 		self.symmetric_fin = is_symmetric_fin
