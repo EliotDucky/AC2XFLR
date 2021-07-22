@@ -61,6 +61,9 @@ class Wing:
 	shape = "ellipse"
 	fsmf = 0.0 #forward semi-minor fraction for ellipses
 
+	taper_ratio = 0.0
+	taper_bias = 0.0
+
 	symmetric_fin = False #true if this wing is a fin and symmetrical
 	#(reflected along the z axis)
 	double_fin = False #true if this wing is a fin and to be doubled
@@ -92,7 +95,8 @@ class Wing:
 				<string> "shape" - the planform shape of the wing
 				<float> "fsmf" - only if "shape": "ellipse"
 				<float> "taper_ratio" - the chord length of the tip as a fraction of root_chord
-				#MORE SUCH AS TAPER RATIO COMING SOON
+				<float> "taper_bias" - how much of the taper should be achieved by the leading edge or trailing edge
+										0.0 for equally shared, 1.0 for LE only, -1.0 for TE only
 			}
 			<string> type - can be "mainwing", horizontal stabiliser", "vertical stabiliser"
 			<boolean> symmetric_fin - true if this wing is a fin and symmetrical
@@ -117,6 +121,7 @@ class Wing:
 			self.chord_func = chordTaper
 			self.taper_ratio = shape_args["taper_ratio"]
 			self.chord_params = (self.root_chord, self.span, self.taper_ratio)
+			self.taper_bias = shape_args["taper_bias"]
 		self._type = _type
 		self.symmetric_fin = symmetric_fin
 		self.double_fin = double_fin
@@ -135,6 +140,16 @@ class Wing:
 		c_aft = K_aft*(1-(2/self.span * y)**2)**0.5
 		return -c_aft
 
+	def chordForeTaper(self, y):
+		c = chordTaper(y, self.root_chord, self.span, self.taper_ratio)
+		cf = -self.taper_bias * self.root_chord / 2 + (self.taper_bias+1)/2 * c
+		return cf
+
+	def chordAftTaper(self, y):
+		c = chordTaper(y, self.root_chord, self.span, self.taper_ratio)
+		ca = -self.taper_bias * self.root_chord / 2 + (self.taper_bias-1)/2 * c
+		return ca
+
 	def draw(self):
 		ys = []
 		c_fores = []
@@ -143,17 +158,24 @@ class Wing:
 		#rect needs few, elliptical needs many
 		if(self.shape == "ellipse"):
 			ys = np.linspace(-self.span/2, self.span/2, 200, True)
+			if(self._type == "vertical stabiliser"):
+				ys = np.linspace(0, self.span/2, 100, True)
 			c_fores = self.chordForeElliptical(ys)
 			c_afts = self.chordAftElliptical(ys)
 		elif(self.shape == "rectangle"):
 			ys = np.array([-self.span/2, self.span/2])
+			if(self._type == "vertical stabiliser"):
+				ys = np.array([0, self.span/2])
 			c_fores = np.array([0,0])
 			c_afts = np.array([-self.root_chord, -self.root_chord])
 		elif(self.shape == "taper"):
 			ys = np.array([-self.span/2, 0, self.span/2])
-			c_fores = np.array([chordTaper(-self.span/2, self.root_chord, self.span, self.taper_ratio)/2,
-				self.root_chord/2, chordTaper(self.span/2, self.root_chord, self.span, self.taper_ratio)/2])
-			c_afts = -c_fores
+			if(self._type == "vertical stabiliser"):
+				ys = np.array([0, self.span/2]) #only plot half
+			for y in ys:
+				c_fores.append(self.chordForeTaper(y))
+				c_afts.append(self.chordAftTaper(y))
+			
 		plt.figure(figsize=(16, 9), dpi = 80)
 		plt.plot(ys, c_fores, label = 'LE')
 		plt.plot(ys, c_afts, label = 'TE')
@@ -162,6 +184,8 @@ class Wing:
 		else:
 			lim = self.root_chord
 		plt.axis([-lim, lim, -lim, lim])
+		if(self._type == "vertical stabiliser"):
+			plt.axis([0, lim, -lim/2, lim/2])		
 		plt.xlabel('y, span position (m)')
 		plt.ylabel('x, longitudinal position (m)')
 		plt.title(self._type + " " +str(self._id))
@@ -272,7 +296,7 @@ class Wing:
 				x_off = 0
 			elif(self.shape == "taper"):
 				c = chordTaper(y, self.root_chord, self.span, self.taper_ratio)
-				x_off = c/2
+				x_off = self.chordForeTaper(y)
 			createSection(sections, y, c, self.foil, -x_off)
 			y+=dx
 		#createSection(sections, self.span/2, 0.000, "NACA1212", 0.000, 0.000, 0.000, 13, "COSINE", 5,"UNIFORM") #tip
