@@ -4,3 +4,5 @@ naca.cpython-37.pyc
 __init__.py
 pyproject.toml
 setup.cfg
+dist
+AC2XFLR.egg-info
